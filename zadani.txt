@@ -1,0 +1,2 @@
+Vytvorte ukazkovou semestralni praci, ktera nemusi splnovat veskere pozadavky.
+Semestralni prace ma hlavne demonstrovat strukturu adreasru.
