@@ -7,6 +7,22 @@
 #ifndef __GAME__H__
 #define __GAME__H__
 
+/*************************************************************************/
+/* Project-wide includes                                                 */
+/*************************************************************************/
+#include <cstdlib>
+#include <cstring>
+
+#include <list>
+#include <queue>
+#include <utility>
+#include <vector>
+
+#include "util.h"
+
+/*************************************************************************/
+/* Game-related declarations                                             */
+/*************************************************************************/
 /**
  * @brief Holds coordinates of a single point.
  *
@@ -17,6 +33,14 @@ struct GameCoord
     /// Type of the coordinate value.
     typedef unsigned short coord_t;
 
+    /**
+     * @brief Initializes the members.
+     *
+     * @param[in] r The row number.
+     * @param[in] c The column number.
+     */
+    GameCoord( coord_t r = 0, coord_t c = 0 ) : row( r ), col( c ) {}
+
     /// The row number.
     coord_t row;
     /// The column number.
@@ -25,6 +49,16 @@ struct GameCoord
 
 /// A pair of GameCoord structs which specify a rectangle.
 typedef std::pair<GameCoord, GameCoord> GameCoordRect;
+
+/**
+ * @brief Helper macro to iterate over a GameCoordRect.
+ *
+ * @param[in] cur  Name of the current-point variable.
+ * @param[in] rect Name of the GameCoordRect.
+ */
+#define GAME_COORD_RECT_ITERATE( cur, rect ) \
+    for( GameCoord cur( rect.first ); cur.row <= rect.second.row; ++cur.row ) \
+        for( cur.col = rect.first.col; cur.col <= rect.second.col; ++cur.col )
 
 /**
  * @brief Describes possible actions at each tick.

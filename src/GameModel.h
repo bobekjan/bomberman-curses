@@ -57,12 +57,6 @@ public:
  */
 struct GameModelEvent
 {
-    enum
-    {
-        GME_ADDENT, ///< Entities added
-        GME_REMENT  ///< Entities removed
-    } event;        ///< The event itself.
-
     /// A related game entity.
     GameEntity entity;
     /// A related area.
@@ -109,13 +103,13 @@ public:
      *
      * @param[in] canvas The canvas to use.
      */
-    virtual void draw( GameCanvas& canvas );
+    void draw( GameCanvas& canvas );
     /**
      * @brief Redraws the entire map.
      *
      * @param[in] canvas The canvas to use.
      */
-    virtual void redraw( GameCanvas& canvas );
+    void redraw( GameCanvas& canvas );
 
 protected:
     /// Size of the game map.
@@ -125,8 +119,8 @@ protected:
 
     /// A vector of spawn points.
     std::vector<GameCoord> mSpawns;
-    /// A vector of dirty map regions to draw.
-    std::vector<GameCoordRect> mDirty;
+    /// A queue of dirty map regions to draw.
+    std::queue<GameCoordRect> mDirty;
 };
 
 /**
@@ -168,19 +162,6 @@ public:
      * @brief Performs a single tick.
      */
     void tick();
-
-    /**
-     * @brief Draws changes of the last tick.
-     *
-     * @param[in] canvas The canvas to use.
-     */
-    void draw( GameCanvas& canvas );
-    /**
-     * @brief Redraws the entire map.
-     *
-     * @param[in] canvas The canvas to use.
-     */
-    void redraw( GameCanvas& canvas );
 
 protected:
     /**
