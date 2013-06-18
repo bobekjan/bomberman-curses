@@ -20,6 +20,8 @@
 #include <utility>
 #include <vector>
 
+#include <curses.h>
+
 #include "util.h"
 
 /*************************************************************************/

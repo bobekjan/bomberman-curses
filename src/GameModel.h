@@ -8,6 +8,7 @@
 #define __GAME_MODEL__H__INCL__
 
 #include "Game.h"
+#include "GameCanvas.h"
 
 /**
  * @brief An abstract entity controller.
@@ -31,25 +32,6 @@ public:
      * @param[out] event Where to store the action.
      */
     virtual void tick( GameCtlEvent& event ) = 0;
-};
-
-/**
- * @brief An abstact game canvas.
- *
- * The canvas is used to draw the game map.
- *
- * @author Jan Bobek
- */
-class GameCanvas
-{
-public:
-    /**
-     * @brief Draws an entity at given coords.
-     *
-     * @param[in] entity The entity to draw.
-     * @param[in] coord  The coords at which to draw.
-     */
-    virtual void draw( GameEntity entity, const GameCoord& coord ) = 0;
 };
 
 /**

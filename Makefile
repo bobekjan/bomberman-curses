@@ -13,8 +13,8 @@
 
 all: compile run
 
-compile: src/Game.h src/GameModel.h src/GameModel.cpp src/util.h
-	g++ -ggdb -O0 -ansi -pedantic -fno-rtti -Wall -Wextra -Werror -Wno-long-long src/GameModel.cpp -o ./bobekja2
+compile: src/Game.h src/GameCanvas.h src/GameModel.h src/GameCanvas.cpp src/GameModel.cpp src/util.h
+	g++ -ggdb -O0 -ansi -pedantic -fno-rtti -Wall -Wextra -Werror -Wno-long-long src/GameCanvas.cpp src/GameModel.cpp -lcurses -o ./bobekja2
 
 run: compile
 	./bobekja2
