@@ -134,10 +134,6 @@ public:
      * @param[in] size Size of the map.
      */
     GameLocalModel( const GameCoord& size );
-    /**
-     * @brief Releases the controlled entities.
-     */
-    ~GameLocalModel();
 
     /**
      * @brief Dispatches a game model event.

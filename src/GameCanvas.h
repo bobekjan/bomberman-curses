@@ -20,6 +20,11 @@ class GameCanvas
 {
 public:
     /**
+     * @brief Propely delete the abstract class.
+     */
+    virtual ~GameCanvas() {}
+
+    /**
      * @brief Draws an entity at given coords.
      *
      * @param[in] entity The entity to draw.

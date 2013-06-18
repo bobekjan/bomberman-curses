@@ -19,7 +19,7 @@ GameModel::GameModel(
 
 GameModel::~GameModel()
 {
-    safeFree( mMap );
+    safeDeleteArray( mMap );
 }
 
 void
