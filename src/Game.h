@@ -4,17 +4,19 @@
  * @author Jan Bobek
  */
 
-#ifndef __GAME__H__
-#define __GAME__H__
+#ifndef __GAME_H__INCL__
+#define __GAME_H__INCL__
 
 /*************************************************************************/
 /* Project-wide includes                                                 */
 /*************************************************************************/
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 
 #include <list>
 #include <queue>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -41,6 +43,31 @@ struct GameCoord
      */
     GameCoord( coord_t r = 0, coord_t c = 0 ) : row( r ), col( c ) {}
 
+    /**
+     * @brief Compare coordinates.
+     *
+     * @param[in] oth The other set of coords.
+     *
+     * @retval true  The coordinates are equal.
+     * @retval false The coordinates are different.
+     */
+    bool operator==( const GameCoord& oth ) const
+    {
+        return row == oth.row && col == oth.col;
+    }
+    /**
+     * @brief Compare coordinates.
+     *
+     * @param[in] oth The other set of coords.
+     *
+     * @retval true  The coordinates are different.
+     * @retval false The coordinates are equal.
+     */
+    bool operator!=( const GameCoord& oth ) const
+    {
+        return !( *this == oth );
+    }
+
     /// The row number.
     coord_t row;
     /// The column number.
@@ -63,7 +90,7 @@ typedef std::pair<GameCoord, GameCoord> GameCoordRect;
 /**
  * @brief Describes possible actions at each tick.
  *
- * @author Bloody.Rabbit
+ * @author Jan Bobek
  */
 enum GameCtlEvent
 {
@@ -79,14 +106,21 @@ enum GameCtlEvent
 /**
  * @brief Describes possible outcomes of an interaction.
  *
- * @author Bloody.Rabbit
+ * @author Jan Bobek
  */
 enum GameInteraction
 {
-    GINT_STOP, ///< Stop the initiator (eg. wall)
-    GINT_DIE,  ///< The target dies
-    GINT_KILL, ///< The initiator dies
-    GINT_BONUS ///< The initiator receives a bonus
+    GINT_OK,        ///< Perform expected action (eg. walk in corridor).
+    GINT_STOP,      ///< Stop the initiator (eg. wall)
+
+    GINT_DIE,       ///< The target dies
+    GINT_DIEBONUS,  ///< The target dies and possibly leaves a bonus behind.
+
+    GINT_KILL,      ///< The initiator dies
+    GINT_KILLBONUS, ///< The initiator dies and possibly leaves a bonus behind.
+
+    GINT_GIVEBONUS, ///< The target receives a bonus
+    GINT_GETBONUS   ///< The initiator receives a bonus
 };
 
 /**
@@ -113,4 +147,4 @@ enum GameEntity
     GENT_COUNT    ///< Number of entities in the game
 };
 
-#endif /* !__GAME__H__ */
+#endif /* !__GAME_H__INCL__ */

@@ -21,6 +21,11 @@ class GameController
 {
 public:
     /**
+     * @brief Properly delete the controller.
+     */
+    virtual ~GameController() {}
+
+    /**
      * @brief Obtain an action for the current tick.
      *
      * @param[out] event Where to store the action.
@@ -112,6 +117,15 @@ public:
     void redraw( GameCanvas& canvas );
 
 protected:
+    /**
+     * @brief Easier access to an entity.
+     *
+     * @param[in] pos Coords of the entity.
+     *
+     * @return The entity.
+     */
+    GameEntity& at( const GameCoord& pos );
+
     /// Size of the game map.
     GameCoord mSize;
     /// The game map.
@@ -189,6 +203,8 @@ protected:
         GameEntity ent;
         /// Position of the entity.
         GameCoord pos;
+        /// Previous position of the entity.
+        GameCoord prevpos;
         /// The associated controller.
         GameController* ctl;
 
@@ -203,6 +219,8 @@ protected:
 
         /// Number of ticks until the next move.
         unsigned char nextmove;
+        /// Is the entity being processed?
+        bool active;
     };
     /**
      * @brief A bomb game entity.
@@ -217,16 +235,132 @@ protected:
          * @param[in] pos_ Position of the bomb.
          * @param[in] ctl_ The associated controlled entity.
          */
-        GameBombEntity( const GameCoord& pos_, GameCtlEntity& ctl_ );
+        GameBombEntity( const GameCoord& pos_, GameCtlEntity* ctl_ );
 
         /// Position of the bomb.
         GameCoord pos;
         /// The associated controlled entity.
-        GameCtlEntity& ctl;
+        GameCtlEntity* ctl;
 
         /// Number of ticks until explosion.
         unsigned char timer;
+        /// Length of the flames.
+        unsigned char flames;
     };
+
+    /**
+     * @brief Handles spawn of an entity.
+     *
+     * @param[in]  entity The entity to be spawned.
+     * @param[in]  ctl    Controller of the entity.
+     */
+    void dispatchSpawnEntity( GameEntity entity, GameController* ctl );
+
+    /**
+     * @brief Ticks the bombs.
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickBombs();
+    /**
+     * @brief Processes a bomb explosion.
+     *
+     * @param[in] bomb The bomb which exploded.
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickBombExploded( GameBombEntity& bomb );
+    /**
+     * @brief Processes spreading of flames.
+     *
+     * @param[in,out] pos     Initial position of the flame.
+     * @param[in]     rowstep How the flame spreads among rows.
+     * @param[in]     colstep How the flame spreads among columns.
+     * @param[in]     flames  Length of the flame.
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickBombSpreadFlame( GameCoord& pos, char rowstep, char colstep,
+                              unsigned char flames );
+
+    /**
+     * @brief Ticks the controlled entities.
+     */
+    void tickEntities();
+    /**
+     * @brief Ticks a single entity.
+     *
+     * @param[in] entity The entity to tick.
+     *
+     * @retval true  The entity has died.
+     * @retval false The entity has not died yet.
+     */
+    bool tickEntity( GameCtlEntity& entity );
+
+    /**
+     * @brief Processes entity move.
+     *
+     * @param[in] entity  The entity which moved.
+     * @param[in] rowstep How many rows it stepped.
+     * @param[in] colstep How many cols it stepped.
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickEntityMoved( GameCtlEntity& entity, char rowstep, char colstep );
+    /**
+     * @brief Processes putting of a bomb.
+     *
+     * @param[in] entity The entity which put a bomb.
+     */
+    void tickEntityPutBomb( GameCtlEntity& entity );
+    /**
+     * @brief Processes an RC trigger.
+     *
+     * @param[in] entity The entity which pulled the trigger.
+     * @param[in] force  Ignore the rc flag in GameCtlEntity.
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickEntityRcTrigger( GameCtlEntity& entity, bool force );
+
+    /**
+     * @brief Processes death of an entity.
+     *
+     * @param[in] pos   Position of the entity which died.
+     * @param[in] bonus Drop bonus?
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickEntityDied( const GameCoord& pos, bool bonus );
+    /**
+     * @brief Processes death of an entity.
+     *
+     * @param[in] entity The entity which died.
+     * @param[in] bonus  Drop bonus?
+     *
+     * @retval true  The active entity has died.
+     * @retval false An inactive entity has died.
+     */
+    bool tickEntityDied( GameCtlEntity& entity, bool bonus );
+
+    /**
+     * @brief Gives a bonus to an entity.
+     *
+     * @param[in] pos Position of the entity which shall receive a bonus.
+     */
+    void tickEntityGiveBonus( const GameCoord& pos );
+    /**
+     * @brief Gives a bonus to an entity.
+     *
+     * @param[in] entity The entity which shall receive a bonus.
+     */
+    void tickEntityGiveBonus( GameCtlEntity& entity );
 
     /// A list of controlled entities.
     std::list<GameCtlEntity> mCtlEntities;
@@ -235,6 +369,9 @@ protected:
 
     /// A queue of events to dispatch at next tick.
     std::queue<GameModelEvent> mEventPipe;
+
+    /// A table of all possible in-game interactions.
+    static const GameInteraction GAME_INTERACTIONS[GENT_COUNT][GENT_COUNT];
 };
 
 #endif /* !__GAME_MODEL__H__INCL__ */
