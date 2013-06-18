@@ -14,7 +14,7 @@
 all: compile run
 
 compile: src/Game.h src/GameModel.h src/GameModel.cpp src/util.h
-	g++ -ggdb -O0 -ansi -pedantic -Wall -Wextra -Werror -Wno-long-long src/GameModel.cpp -o ./bobekja2
+	g++ -ggdb -O0 -ansi -pedantic -fno-rtti -Wall -Wextra -Werror -Wno-long-long src/GameModel.cpp -o ./bobekja2
 
 run: compile
 	./bobekja2
