@@ -102,4 +102,49 @@ inline void safeRelease( T*& p, F f )
     p = NULL;
 }
 
+/**
+ * @brief Prints a centered text.
+ *
+ * @param[in] w The windown into which to print.
+ * @param[in] y The row at which to print.
+ * @param[in] x The column at which to center.
+ * @param[in] t The text to print.
+ */
+void mvwaddstr_center( WINDOW* w, int y, int x, const char* t );
+/**
+ * @brief Pops a message box.
+ *
+ * @param[in] tit Title of the box.
+ * @param[in] msg The message.
+ */
+void msgbox( const char* tit, const char* msg );
+/**
+ * @brief Lets a user select an option from a menu.
+ *
+ * @param[in] tit Title of the menu, optional.
+ * @param[in] cnt Number of items in the menu.
+ * @param[in] ... The items; pairs of name, description.
+ *
+ * @return A value of 0..cnt-1, according to what was selected.
+ */
+unsigned int menu_select( const char* tit, unsigned int cnt, ... );
+/**
+ * @brief Lets a user select an option from a menu.
+ *
+ * @param[in] tit Title of the menu, optional.
+ * @param[in] its An array of items to choose from.
+ *
+ * @return A value of 0..cnt-1, according to what was selected.
+ */
+unsigned int menu_select( const char* tit, ITEM** its );
+/**
+ * @brief Creates a menu for file choosing.
+ *
+ * @param[out] name Where the name of the chosen file goes.
+ * @param[in]  tit  Title of the menu, optional.
+ * @param[in]  dir  Directory with files, optional.
+ */
+void choose_file( std::string& name, const char* tit,
+                  const char* dir = "examples" );
+
 #endif /* __UTIL_H__INCL__ */

@@ -9,30 +9,7 @@
 
 #include "Game.h"
 #include "GameCanvas.h"
-
-/**
- * @brief An abstract entity controller.
- *
- * At each tick the controller says what the associated
- * entity intends to do.
- *
- * @author Jan Bobek
- */
-class GameController
-{
-public:
-    /**
-     * @brief Properly delete the controller.
-     */
-    virtual ~GameController() {}
-
-    /**
-     * @brief Obtain an action for the current tick.
-     *
-     * @param[out] event Where to store the action.
-     */
-    virtual void tick( GameCtlEvent& event ) = 0;
-};
+#include "GameController.h"
 
 /**
  * @brief An event related to the game model.
@@ -73,6 +50,19 @@ public:
     virtual ~GameModel();
 
     /**
+     * @brief Obtain size of the map.
+     *
+     * @return Size of the map.
+     */
+    const GameCoord& size() const { return mSize; }
+    /**
+     * @brief Obtain number of spawns.
+     *
+     * @return Number of spawns.
+     */
+    unsigned int spawnCount() const { return mSpawns.size(); }
+
+    /**
      * @brief Dispatches a game model event.
      *
      * @param[in] event The event to dispatch.
@@ -82,8 +72,11 @@ public:
 
     /**
      * @brief Performs a single tick.
+     *
+     * @retval true  The game continues.
+     * @retval false The game has ended.
      */
-    virtual void tick() = 0;
+    virtual bool tick() = 0;
 
     /**
      * @brief Draws changes of the last tick.
@@ -152,8 +145,11 @@ public:
 
     /**
      * @brief Performs a single tick.
+     *
+     * @retval true  The game continues.
+     * @retval false The game has ended.
      */
-    void tick();
+    bool tick();
 
 protected:
     /**
@@ -233,6 +229,14 @@ protected:
      * @param[in]  ctl    Controller of the entity.
      */
     void dispatchSpawnEntity( GameEntity entity, GameController* ctl );
+
+    /**
+     * @brief Checks if the end conditions have been met.
+     *
+     * @retval true  The game continues.
+     * @retval false The game has ended.
+     */
+    bool tickEndCond();
 
     /**
      * @brief Ticks the bombs.

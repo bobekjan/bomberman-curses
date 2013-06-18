@@ -11,16 +11,23 @@
 /* Project-wide includes                                                 */
 /*************************************************************************/
 #include <cassert>
+#include <csignal>
 #include <cstdlib>
 #include <cstring>
 
+#include <fstream>
+#include <limits>
 #include <list>
 #include <queue>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
+#include <dirent.h>
+#include <unistd.h>
+
 #include <curses.h>
+#include <menu.h>
 
 #include "util.h"
 
@@ -148,5 +155,16 @@ enum GameEntity
 
     GENT_COUNT    ///< Number of entities in the game
 };
+
+/// How many ticks per second (game speed)?
+#define GAME_TICKS_PER_SEC  10
+/// How many ticks before a bomb explodes?
+#define GAME_BOMB_TICKS     3 * GAME_TICKS_PER_SEC
+/// How many bombs by default?
+#define GAME_BOMBS_DEFAULT  1
+/// How long flames by default?
+#define GAME_FLAMES_DEFAULT 1
+/// How many ticks per move by default?
+#define GAME_SPEED_DEFAULT  5
 
 #endif /* !__GAME_H__INCL__ */

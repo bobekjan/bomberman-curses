@@ -9,6 +9,8 @@
 
 #include "Game.h"
 
+class GameModel;
+
 /**
  * @brief An abstact game canvas.
  *
@@ -31,6 +33,10 @@ public:
      * @param[in] coord  The coords at which to draw.
      */
     virtual void draw( GameEntity entity, const GameCoord& coord ) = 0;
+    /**
+     * @brief Flushes the canvas on the screen.
+     */
+    virtual void flush() = 0;
 };
 
 /**
@@ -45,14 +51,31 @@ class NcursesCanvas
 {
 public:
     /**
+     * @brief Initialize the canvas with a game model.
+     *
+     * @param[in] model The game model.
+     */
+    NcursesCanvas( GameModel& model );
+    /**
+     * @brief Releases the window.
+     */
+    ~NcursesCanvas();
+
+    /**
      * @brief Draws an entity at given coords.
      *
      * @param[in] entity The entity to draw.
      * @param[in] coord  The coords at which to draw.
      */
     void draw( GameEntity entity, const GameCoord& coord );
+    /**
+     * @brief Flushes the canvas on the screen.
+     */
+    void flush();
 
 protected:
+    /// Our ncurses window.
+    WINDOW* mWin;
     /// The GameEntity to char translation table.
     static const chtype CANVAS_ENTITIES[GENT_COUNT];
 };

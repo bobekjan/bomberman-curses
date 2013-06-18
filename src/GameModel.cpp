@@ -75,7 +75,8 @@ GameModel::redraw(
     mDirty.push(
         GameCoordRect(
             GameCoord( 0, 0 ),
-            GameCoord( mSize ) ) );
+            GameCoord( mSize.row - 1,
+                       mSize.col - 1 ) ) );
 
     /* Call regular draw. */
     draw( canvas );
@@ -254,9 +255,13 @@ GameLocalModel::queue(
     mEventPipe.push( event );
 }
 
-void
+bool
 GameLocalModel::tick()
 {
+    /* Shall the game carry on? */
+    if( !tickEndCond() )
+        return false;
+
     /* Dispatch events in the queue. */
     for(; !mEventPipe.empty(); mEventPipe.pop() )
         dispatch( mEventPipe.front() );
@@ -267,6 +272,7 @@ GameLocalModel::tick()
 
     /* Visit controlled entities. */
     tickEntities();
+    return true;
 }
 
 void
@@ -307,6 +313,33 @@ GameLocalModel::dispatchSpawnEntity(
     event.coords = GameCoordRect( spawn, spawn );
     event.ctl = NULL;
     dispatch( event );
+}
+
+bool
+GameLocalModel::tickEndCond()
+{
+    bool foundMonster = false;
+    unsigned int playerCnt = 0;
+
+    std::list<GameCtlEntity>::iterator cur, end;
+    cur = mCtlEntities.begin();
+    end = mCtlEntities.end();
+    for(; cur != end; ++cur )
+    {
+        if( GENT_PLAYER == cur->ent )
+            ++playerCnt;
+        else if( GENT_MONSTER == cur->ent )
+            foundMonster = true;
+
+        if( 1 < playerCnt )
+            /* More than 1 player */
+            break;
+        else if( foundMonster && 0 < playerCnt )
+            /* A player + mosters */
+            break;
+    }
+
+    return cur != end;
 }
 
 bool
@@ -392,27 +425,33 @@ GameLocalModel::tickBombSpreadFlame(
     unsigned char flames
     )
 {
+    GameCoord newpos(
+        pos.row + rowstep, pos.col + colstep );
+
     while(
         /* Limit by length of flames. */
         0 < flames-- &&
         /* Limit by height of the game map. */
-        pos.row + rowstep < mSize.row &&
+        newpos.row < mSize.row &&
         /* Limit by width of the game map. */
-        pos.col + colstep < mSize.col )
+        newpos.col < mSize.col )
     {
         /* Get the point where the flame should spread. */
-        const GameEntity target = at(
-            GameCoord( pos.row + rowstep, pos.col + colstep ) );
+        const GameEntity target = at( newpos );
         /* Get the interaction. */
         const GameInteraction gint = GAME_INTERACTIONS[GENT_FLAME][target];
 
         switch( gint )
         {
             case GINT_OK:
+                /* The flame spreads. */
+                pos = newpos;
                 break;
 
             case GINT_DIE:
             case GINT_DIEBONUS:
+                /* The flame spreads for the last time. */
+                pos = newpos;
                 /* Kill the entity, stop the flame. */
                 return tickEntityDied( pos, GINT_DIEBONUS == gint );
 
@@ -425,9 +464,9 @@ GameLocalModel::tickBombSpreadFlame(
                 return false;
         }
 
-        /* The flame spreads. */
-        pos.row += rowstep;
-        pos.col += colstep;
+        /* Try next tile. */
+        newpos.row += rowstep;
+        newpos.col += colstep;
     }
 
     return false;
@@ -795,9 +834,9 @@ GameLocalModel::GameCtlEntity::GameCtlEntity(
   prevpos( pos_ ),
   ctl( ctl_ ),
   /* Initialize some sane defaults. */
-  bombs( ent_ == GENT_PLAYER ? 1 : 0 ),
-  flames( 1 ),
-  speed( 5 ),
+  bombs( ent_ == GENT_PLAYER ? GAME_BOMBS_DEFAULT : 0 ),
+  flames( GAME_FLAMES_DEFAULT ),
+  speed( GAME_SPEED_DEFAULT ),
   rc( false ),
   nextmove( 0 ),
   active( false )
@@ -819,7 +858,7 @@ GameLocalModel::GameBombEntity::GameBombEntity(
     )
 : pos( pos_ ),
   ctl( ctl_ ),
-  timer( 50 ),
+  timer( GAME_BOMB_TICKS ),
   flames( ctl_->flames )
 {
 }
