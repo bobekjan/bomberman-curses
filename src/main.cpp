@@ -6,16 +6,15 @@
 
 #include "GameCanvas.h"
 #include "GameController.h"
-#include "GameModel.h"
+#include "GameLocalModel.h"
+#include "GameServerModel.h"
+#include "GameRemoteModel.h"
 #include "GameModelLoader.h"
-
-void main_menu();
-void start_singleplayer();
-void start_multiplayer();
-void connect_multiplayer();
+#include "util.h"
 
 static volatile bool g_run;
 
+void main_menu();
 void play_game( GameModel& model );
 void sig_recv( int );
 
@@ -27,14 +26,24 @@ main(
 {
     /* Seed random numbers. */
     srand( time( NULL ) );
-    /* Install signal handler. */
+    /* Install the signal handler. */
     signal( SIGINT, sig_recv );
 
     /* Init curses. */
     initscr();
     cbreak();
     noecho();
+    start_color();
+    use_default_colors();
     curs_set( 0 );
+
+    /* Initialize colors. */
+    init_pair( COLOR_PAIR_RED,     COLOR_RED,     -1 );
+    init_pair( COLOR_PAIR_GREEN,   COLOR_GREEN,   -1 );
+    init_pair( COLOR_PAIR_YELLOW,  COLOR_YELLOW,  -1 );
+    init_pair( COLOR_PAIR_BLUE,    COLOR_BLUE,    -1 );
+    init_pair( COLOR_PAIR_MAGENTA, COLOR_MAGENTA, -1 );
+    init_pair( COLOR_PAIR_CYAN,    COLOR_CYAN,    -1 );
 
     /* Show main menu. */
     main_menu();
@@ -47,6 +56,8 @@ main(
 void
 main_menu()
 {
+    GameModel* gm;
+
     while( true )
     {
         /* Erase and box the screen completely. */
@@ -70,40 +81,17 @@ main_menu()
                 "Pripojit se ke hre vice hracu", "",
                 "Ukoncit hru", "" ) )
         {
-            case 0: start_singleplayer(); break;
-            case 1: start_multiplayer(); break;
-            case 2: connect_multiplayer(); break;
+            case 0: gm = GameModelLoader::load<GameLocalModel>(); break;
+            case 1: gm = GameModelLoader::load<GameServerModel>(); break;
+            case 2: gm = GameModelLoader::load<GameRemoteModel>(); break;
             case 3: return;
         }
+
+        if( gm )
+            play_game( *gm );
+
+        safeDelete( gm );
     }
-}
-
-void
-start_singleplayer()
-{
-    std::string map;
-    choose_file( map, "Vyberte mapu:" );
-
-    GameModel* gm = GameModelLoader<GameLocalModel>::load( map );
-    if( !gm )
-        msgbox( "Chyba", "Nepodarilo se nacist zvolenou mapu, zvolte prosim jinou." );
-    else
-        play_game( *gm );
-
-    safeDelete( gm );
-}
-
-void
-start_multiplayer()
-{
-    std::string map;
-    choose_file( map, "Vyberte mapu:" );
-}
-
-void
-connect_multiplayer()
-{
-    // printw( "You selected connect" );
 }
 
 void
@@ -117,7 +105,7 @@ play_game(
     /* Add local player. */
     GameModelEvent event;
     event.entity = GENT_PLAYER;
-    event.coords = GameCoordRect();
+    event.coords = GameCoordRect( model.size(), model.size() );
     event.ctl = new NcursesController;
     model.dispatch( event );
 

@@ -119,6 +119,16 @@ void mvwaddstr_center( WINDOW* w, int y, int x, const char* t );
  */
 void msgbox( const char* tit, const char* msg );
 /**
+ * @brief Pops an ask box.
+ *
+ * @param[in]  tit  Title of the box.
+ * @param[in]  msg  The message.
+ * @param[in]  chrs Allowed characters.
+ * @param[out] into Where to store what the user entered.
+ */
+void askbox( const char* tit, const char* msg, const char* chrs,
+             std::string& into );
+/**
  * @brief Lets a user select an option from a menu.
  *
  * @param[in] tit Title of the menu, optional.
@@ -137,14 +147,5 @@ unsigned int menu_select( const char* tit, unsigned int cnt, ... );
  * @return A value of 0..cnt-1, according to what was selected.
  */
 unsigned int menu_select( const char* tit, ITEM** its );
-/**
- * @brief Creates a menu for file choosing.
- *
- * @param[out] name Where the name of the chosen file goes.
- * @param[in]  tit  Title of the menu, optional.
- * @param[in]  dir  Directory with files, optional.
- */
-void choose_file( std::string& name, const char* tit,
-                  const char* dir = "examples" );
 
 #endif /* __UTIL_H__INCL__ */

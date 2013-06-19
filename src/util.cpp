@@ -5,6 +5,7 @@
  */
 
 #include "Game.h"
+#include "util.h"
 
 void
 mvwaddstr_center(
@@ -45,6 +46,97 @@ msgbox(
     wrefresh( stdscr );
     wrefresh( win );
     wgetch( win );
+
+    /* Release the window. */
+    delwin( win );
+    /* Invalidate the screen. */
+    touchwin( stdscr );
+}
+
+void
+askbox(
+    const char* tit,
+    const char* msg,
+    const char* chrs,
+    std::string& into
+    )
+{
+    /* Get size of the screen. */
+    int sr, sc;
+    getmaxyx( stdscr, sr, sc );
+
+    /* Create a new window. */
+    int wr = 7;
+    int wc = strlen( msg ) + 4;
+
+    WINDOW* win = newwin(
+        wr, wc, (sr - wr) / 2, (sc - wc) / 2 );
+    nodelay( win, FALSE );
+    keypad( win, TRUE );
+    box( win, 0, 0 );
+
+    /* Print the content. */
+    mvwaddstr( win, 0, 2, tit );
+    mvwaddstr( win, 2, 2, msg );
+    mvwaddstr( win, 4, 2, into.c_str() );
+
+    /* Show the cursor. */
+    int oldcurs = curs_set( 1 );
+    /* Show the window. */
+    wrefresh( stdscr );
+
+    int c = 0;
+    unsigned int idx = into.size();
+
+    while( wrefresh( win ), ERR != c )
+    {
+        /* Get a character. */
+        c = wgetch( win );
+
+        if( strchr( chrs, c ) )
+        {
+            /* Valid character, add it. */
+            if( idx < into.size() )
+                into[idx] = c;
+            else
+                into.push_back( c );
+
+            waddch( win, c ); ++idx;
+            continue;
+        }
+
+        switch( c )
+        {
+            case KEY_BACKSPACE:
+                /* Delete last character. */
+                if( !(idx < into.size()) )
+                {
+                    into.erase( --into.end() );
+                    mvwaddch( win, 4, idx + 1, ' ' );
+                }
+                /* Fallthrough */
+
+            case KEY_LEFT:
+                /* Move cursor to the left. */
+                if( 0 < idx )
+                    wmove( win, 4, --idx + 2 );
+                break;
+
+            case KEY_RIGHT:
+                /* Move cursor to the right. */
+                if( idx < into.size() )
+                    wmove( win, 4, ++idx + 2 );
+                break;
+
+            default:
+                /* Break out of the loop. */
+                c = ERR;
+                break;
+        }
+    }
+
+    /* Put the cursor back as it was. */
+    curs_set( oldcurs );
 
     /* Release the window. */
     delwin( win );
@@ -172,61 +264,4 @@ menu_select(
     touchwin( stdscr );
 
     return idx;
-}
-
-void
-choose_file(
-    std::string& name,
-    const char* tit,
-    const char* dir
-    )
-{
-    name.clear();
-
-    /* Open the directory. */
-    DIR* d = opendir( dir );
-    if( !d ) return;
-
-    /* Iterate over the entries. */
-    std::vector<ITEM*> items;
-    dirent* ent = NULL;
-    while( (ent = readdir( d )) )
-    {
-        if( !strcmp( ent->d_name, "." ) ||
-            !strcmp( ent->d_name, ".." ) )
-            /* Not interested. */
-            continue;
-
-        /* Duplicate the name. */
-        char* name = strdup( ent->d_name );
-        /* Create a menu item. */
-        ITEM* item = new_item( name, "" );
-        /* Store the filename to it. */
-        set_item_userptr( item, name );
-
-        items.push_back( item );
-    }
-    /* NULL-teminate! */
-    items.push_back( NULL );
-
-    /* Close the directory. */
-    closedir( d );
-    /* Extract the name. */
-    unsigned int idx = menu_select(
-        tit, &items[0] );
-    name += dir;
-    name += '/';
-    name += (char*)item_userptr( items[idx] );
-
-    /* Release the items. */
-    std::vector<ITEM*>::iterator cur, end;
-    cur = items.begin();
-    end = items.end();
-    for(; cur != end; ++cur )
-    {
-        /* Free the memory from strdup. */
-        free( item_userptr( *cur ) );
-        /* Free the item. */
-        free_item( *cur );
-    }
 }

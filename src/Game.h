@@ -24,12 +24,14 @@
 #include <vector>
 
 #include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 #include <curses.h>
 #include <menu.h>
-
-#include "util.h"
 
 /*************************************************************************/
 /* Game-related declarations                                             */
@@ -156,8 +158,21 @@ enum GameEntity
     GENT_COUNT    ///< Number of entities in the game
 };
 
+/// A color pair of red foreground.
+#define COLOR_PAIR_RED     1
+/// A color pair of green foreground.
+#define COLOR_PAIR_GREEN   2
+/// A color pair of yellow foreground.
+#define COLOR_PAIR_YELLOW  3
+/// A color pair of blue foreground.
+#define COLOR_PAIR_BLUE    4
+/// A color pair of magenta foreground.
+#define COLOR_PAIR_MAGENTA 5
+/// A color pair of cyan foreground.
+#define COLOR_PAIR_CYAN    6
+
 /// How many ticks per second (game speed)?
-#define GAME_TICKS_PER_SEC  10
+#define GAME_TICKS_PER_SEC  15
 /// How many ticks before a bomb explodes?
 #define GAME_BOMB_TICKS     3 * GAME_TICKS_PER_SEC
 /// How many bombs by default?
@@ -166,5 +181,14 @@ enum GameEntity
 #define GAME_FLAMES_DEFAULT 1
 /// How many ticks per move by default?
 #define GAME_SPEED_DEFAULT  5
+
+/// How many % that a bonus is dropped?
+#define GAME_BONUS_PERCENT        10
+/// How many % that a bonus is a bomb?
+#define GAME_BONUS_BOMB_PERCENT   30
+/// How many % that a bonus is flames?
+#define GAME_BONUS_FLAMES_PERCENT 30
+/// How many % that a bonus is speed?
+#define GAME_BONUS_SPEED_PERCENT  30
 
 #endif /* !__GAME_H__INCL__ */
